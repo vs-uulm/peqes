@@ -1,0 +1,15 @@
+[package]
+name = "peqes-runner"
+version = "0.1.0"
+authors = ["Dominik Meißner <dominik.meissner@uni-ulm.de>"]
+edition = "2018"
+
+[dependencies]
+uuid = { version = "0.8", features = ["v4"] }
+aesm-client = { version = "0.3.1", features = ["sgxs"] }
+futures = { version = "0.3.4", features = ["compat", "io-compat"] }
+enclave-runner = "0.4.1"
+sgxs-loaders = "0.2.1"
+sgx-isa = "0.3.1"
+failure = "0.1.6"
+tokio = "0.2"

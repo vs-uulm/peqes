@@ -1,0 +1,21 @@
+steps:
+
+- id: build
+  uses: "./build-environment"
+  runs: ["sh"]
+  args: ["-c", "mkdir -p evaluation/bin; cd peqes-runner; cargo build --release; cd ../peqes-server; make all; cd ..; cp -t evaluation/bin peqes-runner/target/release/peqes-runner peqes-server/target/release/peqes-server peqes-server/target/x86_64-fortanix-unknown-sgx/release/peqes-server.sgxs"]
+
+- id: measure
+  uses: "docker://node:12.21.0"
+  options:
+    devices:
+      - /dev/isgx
+    mounts:
+      - { 'target': '/var/run/aesmd', 'source': '/var/run/aesmd', 'type': 'bind', 'read_only': false }
+  runs: ["sh"]
+  args: ["-c", "cd evaluation; npm install; cd ..; for i in evaluation/experiments/*.sh; do echo executing ${i}...; $i; done"]
+
+- id: analyze
+  uses: "docker://rocker/tidyverse:4.0.4"
+  runs: ["sh"]
+  args: ["-c", "for i in evaluation/experiments/*.R; do echo executing ${i}...; R --vanilla < $i; done"]

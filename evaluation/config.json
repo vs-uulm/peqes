@@ -1,0 +1,111 @@
+{
+    "platformURL": "http://127.0.0.1:3001",
+    "ethicsKey": {
+        "kty": "EC",
+        "crv": "P-256",
+        "d": "fJyYQ4YbcSXE93ZnyBz3RjyzbGRbS07XXi0_PDSFI0g",
+        "x": "1cYonM24TpxFX3gKdLi_4hzRPyMvznnfPvc468dXB5k",
+        "y": "2LIh238K9UYqBYcVsnj7a3qjCreUZuBLasrprl-uDXc"
+    },
+    "studyExample": {
+        "name": "BFI-10 Survey Example",
+        "description": "This Survey is based on: https://www.gesis.org/fileadmin/kurzskalen/working_papers/BFI10_Workingpaper.pdf",
+        "questionnaire": {
+            "title": "BFI-10 Survey Example",
+            "source": "https://www.gesis.org/fileadmin/kurzskalen/working_papers/BFI10_Workingpaper.pdf",
+            "pages": [
+                {
+                    "questions": [
+                        {
+                            "type": "text",
+                            "inputType": "number",
+                            "name": "age",
+                            "title": "How old are you?",
+                            "isRequired": true,
+                            "validators": [
+                                {
+                                    "type": "numeric",
+                                    "minValue": 1,
+                                    "maxValue": 100
+                                }
+                            ]
+                        },
+                        {
+                            "type": "matrix",
+                            "name": "BFI-10",
+                            "isRequired": true,
+                            "isAllRowRequired": true,
+                            "title": "How well do the following statements describe your personality?",
+                            "description": "I see myself as someone who …",
+                            "columns": [
+                                {
+                                    "value": 1,
+                                    "text": "strongly disagree"
+                                },
+                                {
+                                    "value": 2,
+                                    "text": "disagree"
+                                },
+                                {
+                                    "value": 3,
+                                    "text": "neither agree nor disagree"
+                                },
+                                {
+                                    "value": 4,
+                                    "text": "agree"
+                                },
+                                {
+                                    "value": 5,
+                                    "text": "strongly agree"
+                                }
+                            ],
+                            "rows": [
+                                {
+                                    "value": "item01",
+                                    "text": "is reserved"
+                                },
+                                {
+                                    "value": "item02",
+                                    "text": "is generally trusting"
+                                },
+                                {
+                                    "value": "item03",
+                                    "text": "tends to be lazy"
+                                },
+                                {
+                                    "value": "item04",
+                                    "text": "is relaxed, handles stress well"
+                                },
+                                {
+                                    "value": "item05",
+                                    "text": "has few artistic interests"
+                                },
+                                {
+                                    "value": "item06",
+                                    "text": "is outgoing, sociable"
+                                },
+                                {
+                                    "value": "item07",
+                                    "text": "tends to find fault with others"
+                                },
+                                {
+                                    "value": "item08",
+                                    "text": "does a thorough job"
+                                },
+                                {
+                                    "value": "item09",
+                                    "text": "gets nervous easily"
+                                },
+                                {
+                                    "value": "item10",
+                                    "text": "has an active imagination"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "analysis": "\n        const cohorts = [\n            { E: [], N: [], O: [], G: [], V: [] },\n            { E: [], N: [], O: [], G: [], V: [] }\n        ];\n\n        // based on: https://github.com/jstat/jstat/issues/189#issuecomment-469255296\n        function ttest(a, b) {\n            meanA = jStat.mean(a);\n            meanB = jStat.mean(b);\n\n            S2 = (jStat.sum(jStat.pow(jStat.subtract(a, meanA), 2)) + jStat.sum(jStat.pow(jStat.subtract(b, meanB), 2))) / (a.length + b.length - 2);\n            tScore = (meanA - meanB) / Math.sqrt(S2 / a.length + S2 / b.length);\n            pValue = jStat.studentt.cdf(-Math.abs(tScore), a.length + b.length - 2) * 2;\n\n            return {\n                tScore: tScore,\n                pValue: pValue,\n                meanA: meanA,\n                meanB: meanB\n            };\n        }\n\n        data.forEach((row) => {\n            // recode items\n            row['BFI-10'].item01 = 6 - row['BFI-10'].item01;\n            row['BFI-10'].item03 = 6 - row['BFI-10'].item03;\n            row['BFI-10'].item04 = 6 - row['BFI-10'].item04;\n            row['BFI-10'].item05 = 6 - row['BFI-10'].item05;\n            row['BFI-10'].item07 = 6 - row['BFI-10'].item07;\n\n            // add items to matching cohort\n            const g = row['age'] <= 50 ? 0 : 1;\n            cohorts[g].E.push(row['BFI-10'].item01, row['BFI-10'].item06);\n            cohorts[g].N.push(row['BFI-10'].item04, row['BFI-10'].item09);\n            cohorts[g].O.push(row['BFI-10'].item05, row['BFI-10'].item10);\n            cohorts[g].G.push(row['BFI-10'].item03, row['BFI-10'].item08);\n            cohorts[g].V.push(row['BFI-10'].item02, row['BFI-10'].item07);\n        });\n\n        pushResult({\n            E: ttest(cohorts[0].E, cohorts[1].E),\n            N: ttest(cohorts[0].N, cohorts[1].N),\n            O: ttest(cohorts[0].O, cohorts[1].O),\n            G: ttest(cohorts[0].G, cohorts[1].G),\n            V: ttest(cohorts[0].V, cohorts[1].V)\n        });\n    "
+    }
+}
